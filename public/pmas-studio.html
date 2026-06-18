@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P-MAS Studio -- Visual IDE for Multi-Agent Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   CSS VARIABLES -- Midnight Theme
+   ================================================================ */
+:root {
+  --bg-deep: #010409;
+  --background: #0D1117;
+  --foreground: #E6EDF3;
+  --card: #161B22;
+  --primary: #58A6FF;
+  --primary-dim: rgba(88,166,255,0.12);
+  --primary-glow: rgba(88,166,255,0.3);
+  --secondary: #21262D;
+  --muted-foreground: #8B949E;
+  --border: #30363D;
+  --green: #3FB950;
+  --amber: #D29922;
+  --red: #F85149;
+  --purple: #BC8CFF;
+  --cyan: #39D2C0;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-deep);
+  color: var(--foreground);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ================================================================
+   LAYER SYSTEM
+   ================================================================ */
+#bg-canvas {
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 0; pointer-events: none;
+}
+.gradient-overlay {
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(88,166,255,0.03) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(188,140,255,0.015) 0%, transparent 60%),
+    linear-gradient(to bottom, rgba(1,4,9,0.4) 0%, transparent 25%, transparent 75%, rgba(1,4,9,0.9) 100%);
+}
+.layer-content { position: relative; z-index: 2; }
+
+/* ================================================================
+   NAVIGATION
+   ================================================================ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 0 24px;
+  background: rgba(1,4,9,0.7);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(48,54,61,0.4);
+  transition: background 0.3s ease;
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; height: 64px;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--foreground);
+  font-weight: 700; font-size: 18px; letter-spacing: -0.02em;
+}
+.nav-logo svg { flex-shrink: 0; }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a {
+  color: var(--muted-foreground); text-decoration: none;
+  font-size: 14px; font-weight: 500; transition: color 0.2s ease;
+}
+.nav-links a:hover { color: var(--foreground); }
+.nav-github {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--muted-foreground); text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.nav-github:hover { color: var(--foreground); border-color: var(--muted-foreground); background: var(--secondary); }
+
+/* ================================================================
+   HERO
+   ================================================================ */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 120px 24px 80px; position: relative;
+}
+.hero-content { position: relative; z-index: 4; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px; border-radius: 9999px;
+  border: 1px solid var(--border); background: rgba(22,27,34,0.6);
+  font-size: 13px; font-weight: 500; color: var(--muted-foreground);
+  margin-bottom: 32px; backdrop-filter: blur(8px);
+}
+.hero-badge .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+.hero h1 {
+  font-size: clamp(52px, 8vw, 88px);
+  font-weight: 900; letter-spacing: -0.045em; line-height: 1.0;
+  margin-bottom: 24px; color: var(--foreground);
+}
+.hero h1 span {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--cyan) 50%, var(--purple) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-subtitle {
+  font-size: clamp(18px, 2.5vw, 24px); font-weight: 400;
+  color: var(--muted-foreground); margin-bottom: 16px;
+  letter-spacing: -0.015em; max-width: 580px;
+  margin-left: auto; margin-right: auto; line-height: 1.5;
+}
+.hero-desc {
+  font-size: clamp(14px, 1.5vw, 16px); font-weight: 400;
+  color: rgba(139,148,158,0.7); margin-bottom: 44px;
+  max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.7;
+}
+.hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+/* ================================================================
+   BUTTONS
+   ================================================================ */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: var(--primary); color: #fff; border: none;
+  border-radius: 10px; font-family: var(--font-sans); font-size: 15px;
+  font-weight: 600; cursor: pointer; text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 20px rgba(88,166,255,0.25), 0 0 60px rgba(88,166,255,0.08);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(88,166,255,0.4), 0 0 80px rgba(88,166,255,0.15); }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; background: transparent; color: var(--foreground);
+  border: 1px solid var(--border); border-radius: 10px;
+  font-family: var(--font-sans); font-size: 15px; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: all 0.25s ease;
+}
+.btn-ghost:hover { border-color: var(--muted-foreground); background: var(--secondary); transform: translateY(-2px); }
+
+.scroll-indicator {
+  position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--muted-foreground); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  animation: bounce-scroll 2.5s ease-in-out infinite; z-index: 4;
+}
+.scroll-indicator svg { opacity: 0.5; }
+@keyframes bounce-scroll {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+
+/* ================================================================
+   ARCHITECTURE SECTION -- CPU Outbound Routing to Cards
+   ================================================================ */
+.arch-section {
+  padding: 80px 24px 120px;
+  position: relative;
+}
+.arch-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; gap: 56px;
+}
+.arch-title {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800; letter-spacing: -0.03em; line-height: 1.15;
+  text-align: center; color: var(--foreground);
+}
+.arch-title .break::before { content: ''; display: block; }
+
+/* ─── Illustration: routes + CPU + cards in one unit ────── */
+.illustration {
+  display: flex; flex-direction: column; align-items: center;
+  width: 100%; position: relative;
+}
+
+/* Route area: contains SVG and CPU */
+.route-area {
+  position: relative;
+  width: 100%; max-width: 891px;
+}
+.lines-svg {
+  display: block; width: 100%; height: auto;
+  overflow: visible;
+}
+
+/* ─── CPU block (absolute, centered in route-area) ─────── */
+.cpu-wrapper {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  z-index: 3;
+}
+.cpu {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 128px; height: 88px;
+  background: #111; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; z-index: 2;
+}
+.cpu-shine {
+  position: absolute; inset: 0; border-radius: 8px;
+  overflow: hidden; pointer-events: none;
+}
+.cpu-shine::after {
+  content: ''; position: absolute; top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(ellipse at 30% 20%, rgba(88,166,255,0.05) 0%, transparent 60%);
+}
+.cpu-text {
+  font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.8); z-index: 1; text-align: center; line-height: 1.3;
+}
+.cpu-sub {
+  font-size: 10px; font-weight: 400; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.3); z-index: 1; margin-top: 2px;
+  font-family: var(--font-mono);
+}
+
+/* ─── Connectors ─────────────────────────────────────── */
+[data-connectors] { position: absolute; display: flex; }
+[data-side="top"], [data-side="bottom"] { left: 50%; transform: translateX(-50%); gap: 6px; }
+[data-side="top"] { top: -8px; flex-direction: row; }
+[data-side="bottom"] { bottom: -8px; flex-direction: row; }
+[data-side="left"], [data-side="right"] { top: 50%; transform: translateY(-50%); gap: 6px; }
+[data-side="left"] { left: -8px; flex-direction: column; }
+[data-side="right"] { right: -8px; flex-direction: column; }
+[data-connector] { width: 3px; height: 3px; background: rgba(255,255,255,0.15); border-radius: 1px; }
+
+/* ─── Cards ──────────────────────────────────────────── */
+.arch-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 891px;
+  position: relative;
+  z-index: 2;
+}
+.arch-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  text-decoration: none; color: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+.arch-card:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); }
+.arch-card-icon {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--foreground); opacity: 0.7;
+}
+.arch-card-icon svg { width: 100%; height: 100%; }
+.arch-card-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 500; color: var(--foreground);
+}
+.arch-card-title .arrow { color: #666; flex-shrink: 0; }
+.arch-card-desc {
+  font-size: 13px; line-height: 1.5;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ================================================================
+   CTA
+   ================================================================ */
+.cta-section { text-align: center; padding: 120px 24px; position: relative; }
+.cta-box {
+  position: relative; max-width: 720px; margin: 0 auto;
+  padding: 80px 56px; border: 1px dashed rgba(88,166,255,0.2);
+  border-radius: 20px; background: rgba(22,27,34,0.4);
+  backdrop-filter: blur(12px); overflow: hidden;
+}
+.cta-glow {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(88,166,255,0.06) 0%, transparent 70%); pointer-events: none;
+}
+.cta-plus { position: absolute; width: 20px; height: 20px; color: rgba(88,166,255,0.25); transition: color 0.3s ease; }
+.cta-box:hover .cta-plus { color: rgba(88,166,255,0.5); }
+.cta-plus-tl { top: 12px; left: 12px; }
+.cta-plus-tr { top: 12px; right: 12px; }
+.cta-plus-bl { bottom: 12px; left: 12px; }
+.cta-plus-br { bottom: 12px; right: 12px; }
+.cta-section h2 {
+  font-size: clamp(32px, 4.5vw, 48px); font-weight: 900;
+  letter-spacing: -0.03em; margin-bottom: 16px;
+  position: relative; z-index: 1;
+}
+.cta-desc {
+  font-size: 16px; color: var(--muted-foreground);
+  margin-bottom: 40px; max-width: 400px;
+  margin-left: auto; margin-right: auto; line-height: 1.7;
+  position: relative; z-index: 1;
+}
+.cta-buttons {
+  display: flex; gap: 16px; justify-content: center;
+  flex-wrap: wrap; position: relative; z-index: 1;
+}
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+.footer { border-top: 1px solid rgba(48,54,61,0.4); padding: 40px 24px; position: relative; }
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+}
+.footer-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; color: var(--foreground); }
+.footer-links { display: flex; gap: 24px; list-style: none; }
+.footer-links a { color: var(--muted-foreground); text-decoration: none; font-size: 14px; transition: color 0.2s ease; }
+.footer-links a:hover { color: var(--foreground); }
+.footer-copy { font-size: 12px; color: var(--muted-foreground); font-family: var(--font-mono); }
+
+/* ================================================================
+   SCROLL REVEAL
+   ================================================================ */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.stagger-1 { transition-delay: 0.08s; }
+.stagger-2 { transition-delay: 0.16s; }
+.stagger-3 { transition-delay: 0.24s; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 900px) {
+  .arch-cards { grid-template-columns: 1fr; max-width: 400px; }
+}
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .hero h1 { font-size: clamp(36px, 10vw, 56px); }
+  .cta-section { padding: 80px 20px; }
+  .cta-box { padding: 56px 28px; }
+  .footer-inner { flex-direction: column; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  .reveal { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+  .scroll-indicator { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     LAYER 0: Three.js Dust Particles
+     ================================================================ -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div class="gradient-overlay" aria-hidden="true"></div>
+
+<!-- ================================================================
+     NAVIGATION
+     ================================================================ -->
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo" aria-label="P-MAS Studio Home">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="7" fill="#58A6FF" fill-opacity="0.15"/>
+        <path d="M8 10h4v4H8zM16 10h4v4h-4zM12 16h4v4h-4z" fill="#58A6FF"/>
+        <path d="M12 12l4 4" stroke="#BC8CFF" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      P-MAS Studio
+    </a>
+    <ul class="nav-links">
+      <li><a href="#arch">Architecture</a></li>
+      <li><a href="#cta">Get Started</a></li>
+    </ul>
+    <a href="https://github.com/stsgs1980/P-mas-studio" target="_blank" rel="noopener noreferrer" class="nav-github" aria-label="View on GitHub">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- ================================================================
+     CONTENT
+     ================================================================ -->
+<main class="layer-content">
+
+  <!-- ====== HERO ====== -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Open Source Visual IDE
+      </div>
+      <h1>Design <span>Multi-Agent</span><br>Systems Visually</h1>
+      <p class="hero-subtitle">Build, deploy, and orchestrate intelligent agent networks with a visual graph editor.</p>
+      <p class="hero-desc">P-MAS Studio provides a structured approach to multi-agent system architecture, from strategy definition to runtime monitoring.</p>
+      <div class="hero-buttons">
+        <a href="#arch" class="btn-primary">
+          Explore Architecture
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v10.17l3.07-3.07.7.71L7.35 13.24 3 8.88l.71-.71L7 11.18V1z"/></svg>
+        </a>
+        <a href="https://github.com/stsgs1980/P-mas-studio" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.63 0 12 0z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1v10.17l3.07-3.07.7.71L7.35 13.24 3 8.88l.71-.71L7 11.18V1z"/></svg>
+    </div>
+  </section>
+
+  <!-- ====== ARCHITECTURE: CPU Outbound Routing ====== -->
+  <section class="arch-section" id="arch">
+    <div class="arch-inner">
+      <h2 class="arch-title reveal">
+        Powered by a structured<br><span class="break">multi-agent orchestration engine</span>
+      </h2>
+
+      <!-- ─── Illustration: SVG routes + CPU + cards ──────── -->
+      <div class="illustration reveal stagger-1">
+
+        <!-- Route area: SVG + CPU overlay -->
+        <div class="route-area">
+          <svg class="lines-svg" fill="none" height="300" viewBox="0 0 891 300" width="891"
+               aria-label="Orchestrator routes connecting to agent modules">
+            <defs>
+              <!-- Pulse gradients (CPU -> Card direction) -->
+              <linearGradient gradientUnits="userSpaceOnUse" id="p-blue" x1="416" y1="210" x2="148" y2="300">
+                <stop stop-color="#58A6FF" stop-opacity="0"/>
+                <stop offset="0.08" stop-color="#58A6FF"/>
+                <stop offset="1" stop-color="#58A6FF" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient gradientUnits="userSpaceOnUse" id="p-cyan" x1="446" y1="210" x2="446" y2="300">
+                <stop stop-color="#39D2C0" stop-opacity="0"/>
+                <stop offset="0.08" stop-color="#39D2C0"/>
+                <stop offset="1" stop-color="#39D2C0" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient gradientUnits="userSpaceOnUse" id="p-purple" x1="480" y1="210" x2="748" y2="300">
+                <stop stop-color="#BC8CFF" stop-opacity="0"/>
+                <stop offset="0.08" stop-color="#BC8CFF"/>
+                <stop offset="1" stop-color="#BC8CFF" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+
+            <!-- ═══════════════════════════════════════════════
+                 SECONDARY ROUTES (decorative, outward to edges)
+                 Very faint: opacity 0.02-0.03
+                 ═══════════════════════════════════════════════ -->
+
+            <!-- Top-left: CPU -> upper-left corner -->
+            <path d="M 416 116 L 416 55 L 60 55 L 60 8"
+                  stroke="#58A6FF" stroke-width="0.8" fill="none" opacity="0.025"/>
+            <!-- Top-center: CPU -> top edge -->
+            <path d="M 446 116 L 446 8"
+                  stroke="#D29922" stroke-width="0.8" fill="none" opacity="0.02"/>
+            <!-- Top-right: CPU -> upper-right corner -->
+            <path d="M 480 116 L 480 55 L 831 55 L 831 8"
+                  stroke="#3FB950" stroke-width="0.8" fill="none" opacity="0.025"/>
+            <!-- Left: CPU -> left edge -->
+            <path d="M 381 148 L 280 148 C 277 148 275 146 275 143 L 275 105 L 65 105 C 62 105 60 103 60 100 L 60 78"
+                  stroke="#58A6FF" stroke-width="0.8" fill="none" opacity="0.02"/>
+            <!-- Right: CPU -> right edge -->
+            <path d="M 511 148 L 612 148 C 615 148 617 146 617 143 L 617 105 L 826 105 C 829 105 831 103 831 100 L 831 78"
+                  stroke="#3FB950" stroke-width="0.8" fill="none" opacity="0.02"/>
+            <!-- Extra secondary branches -->
+            <path d="M 400 116 L 400 85 L 200 85 L 200 55 L 160 55"
+                  stroke="#BC8CFF" stroke-width="0.6" fill="none" opacity="0.015"/>
+            <path d="M 496 116 L 496 85 L 690 85 L 690 55 L 730 55"
+                  stroke="#39D2C0" stroke-width="0.6" fill="none" opacity="0.015"/>
+            <!-- Small detail stubs (IC interconnects) -->
+            <path d="M 381 165 L 340 165 L 340 185 L 310 185"
+                  stroke="#58A6FF" stroke-width="0.6" fill="none" opacity="0.018"/>
+            <path d="M 511 165 L 552 165 L 552 185 L 582 185"
+                  stroke="#3FB950" stroke-width="0.6" fill="none" opacity="0.018"/>
+            <path d="M 425 210 L 425 240 L 350 240 L 350 255"
+                  stroke="#39D2C0" stroke-width="0.6" fill="none" opacity="0.015"/>
+            <path d="M 468 210 L 468 240 L 540 240 L 540 255"
+                  stroke="#D29922" stroke-width="0.6" fill="none" opacity="0.015"/>
+
+            <!-- Decorative vias at corners/turns -->
+            <circle cx="416" cy="55" r="1.5" fill="none" stroke="#58A6FF" stroke-width="0.5" opacity="0.03"/>
+            <circle cx="480" cy="55" r="1.5" fill="none" stroke="#3FB950" stroke-width="0.5" opacity="0.03"/>
+            <circle cx="275" cy="105" r="1.5" fill="none" stroke="#58A6FF" stroke-width="0.5" opacity="0.025"/>
+            <circle cx="617" cy="105" r="1.5" fill="none" stroke="#3FB950" stroke-width="0.5" opacity="0.025"/>
+            <circle cx="200" cy="55" r="1" fill="none" stroke="#BC8CFF" stroke-width="0.4" opacity="0.02"/>
+            <circle cx="690" cy="55" r="1" fill="none" stroke="#39D2C0" stroke-width="0.4" opacity="0.02"/>
+            <circle cx="310" cy="185" r="1" fill="none" stroke="#58A6FF" stroke-width="0.4" opacity="0.02"/>
+            <circle cx="582" cy="185" r="1" fill="none" stroke="#3FB950" stroke-width="0.4" opacity="0.02"/>
+            <circle cx="350" cy="240" r="1" fill="none" stroke="#39D2C0" stroke-width="0.4" opacity="0.018"/>
+            <circle cx="540" cy="240" r="1" fill="none" stroke="#D29922" stroke-width="0.4" opacity="0.018"/>
+            <circle cx="60" cy="55" r="1.5" fill="none" stroke="#58A6FF" stroke-width="0.4" opacity="0.02"/>
+            <circle cx="831" cy="55" r="1.5" fill="none" stroke="#3FB950" stroke-width="0.4" opacity="0.02"/>
+
+            <!-- ═══════════════════════════════════════════════
+                 MAIN ROUTES: CPU -> Each Card (bottom)
+                 These are the primary visual connections
+                 ═══════════════════════════════════════════════ -->
+
+            <!-- Main route 1: CPU bottom-left -> Card 1 (x≈148)
+                 Manhattan: down from CPU, left to card x, down to SVG edge -->
+            <path d="M 416 210 L 416 260 L 148 260 L 148 300"
+                  stroke="#58A6FF" stroke-width="1" fill="none" opacity="0.07"
+                  pathLength="1" stroke-dasharray="1 1"/>
+
+            <!-- Main route 2: CPU bottom-center -> Card 2 (x≈446)
+                 Straight down -->
+            <path d="M 446 210 L 446 300"
+                  stroke="#39D2C0" stroke-width="1" fill="none" opacity="0.07"
+                  pathLength="1" stroke-dasharray="1 1"/>
+
+            <!-- Main route 3: CPU bottom-right -> Card 3 (x≈748)
+                 Manhattan: down from CPU, right to card x, down to SVG edge -->
+            <path d="M 480 210 L 480 260 L 748 260 L 748 300"
+                  stroke="#BC8CFF" stroke-width="1" fill="none" opacity="0.07"
+                  pathLength="1" stroke-dasharray="1 1"/>
+
+            <!-- ═══════════════════════════════════════════════
+                 ANIMATED PULSES (CPU -> Card, subtle)
+                 Very short dash: 6px visible on ~600px path
+                 ═══════════════════════════════════════════════ -->
+
+            <!-- Pulse to Card 1 -->
+            <path d="M 416 210 L 416 260 L 148 260 L 148 300"
+                  stroke="url(#p-blue)" stroke-width="1" stroke-linecap="round"
+                  pathLength="600" class="pulse-a"/>
+
+            <!-- Pulse to Card 2 -->
+            <path d="M 446 210 L 446 300"
+                  stroke="url(#p-cyan)" stroke-width="1" stroke-linecap="round"
+                  pathLength="600" class="pulse-b"/>
+
+            <!-- Pulse to Card 3 -->
+            <path d="M 480 210 L 480 260 L 748 260 L 748 300"
+                  stroke="url(#p-purple)" stroke-width="1" stroke-linecap="round"
+                  pathLength="600" class="pulse-c"/>
+
+            <!-- ═══════════════════════════════════════════════
+                 ENDPOINT CIRCLES (at SVG bottom = card top edge)
+                 These sit right at the boundary between SVG and cards
+                 ═══════════════════════════════════════════════ -->
+
+            <!-- Card 1 endpoint -->
+            <circle cx="148" cy="299" r="4" fill="#010409"/>
+            <circle cx="148" cy="299" r="3.5" fill="none" stroke="#58A6FF" stroke-opacity="0.12"/>
+
+            <!-- Card 2 endpoint -->
+            <circle cx="446" cy="299" r="4" fill="#010409"/>
+            <circle cx="446" cy="299" r="3.5" fill="none" stroke="#39D2C0" stroke-opacity="0.12"/>
+
+            <!-- Card 3 endpoint -->
+            <circle cx="748" cy="299" r="4" fill="#010409"/>
+            <circle cx="748" cy="299" r="3.5" fill="none" stroke="#BC8CFF" stroke-opacity="0.12"/>
+
+          </svg>
+
+          <!-- ─── CPU BLOCK (absolute, centered in route-area) ── -->
+          <div class="cpu-wrapper">
+            <div class="cpu">
+              <div class="cpu-shine"></div>
+              <div data-connectors data-side="left">
+                <span data-connector></span><span data-connector></span>
+              </div>
+              <div data-connectors data-side="top">
+                <span data-connector></span><span data-connector></span><span data-connector></span>
+                <span data-connector></span><span data-connector></span><span data-connector></span>
+              </div>
+              <span data-text class="cpu-text">Orchestrator</span>
+              <span class="cpu-sub">P-MAS Core</span>
+              <div data-connectors data-side="bottom">
+                <span data-connector></span><span data-connector></span><span data-connector></span>
+                <span data-connector></span><span data-connector></span><span data-connector></span>
+              </div>
+              <div data-connectors data-side="right">
+                <span data-connector></span><span data-connector></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── CARDS (directly below SVG, 0 gap) ───────────── -->
+        <div class="arch-cards reveal stagger-2">
+
+          <a class="arch-card" href="#features" aria-label="Visual IDE">
+            <div class="arch-card-icon">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75Zm0 5A.75.75 0 0 1 1.75 7h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 1 7.75ZM1.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5Zm7.5-4.25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Zm0 5a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75ZM9 2v3.5L11 4Z" clip-rule="evenodd"/></svg>
+            </div>
+            <div>
+              <span class="arch-card-title">
+                Visual IDE
+                <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path fill-rule="evenodd" d="M5.75 2H5v1.5h6.44l-9.22 9.22-.53.53 1.06 1.06.53-.53 9.22-9.22V11H14V3a1 1 0 0 0-1-1z" clip-rule="evenodd"/></svg>
+              </span>
+              <span class="arch-card-desc">Graph-based editor for designing multi-agent topologies, connections, and data flows with drag-and-drop precision.</span>
+            </div>
+          </a>
+
+          <a class="arch-card" href="#features" aria-label="Agent Runtime">
+            <div class="arch-card-icon">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 1ZM4 4.75a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0v-5.5A.75.75 0 0 1 4 4.75Zm4-1.5a.75.75 0 0 1 .75.75v7.5a.75.75 0 0 1-1.5 0v-7.5A.75.75 0 0 1 8 3.25Zm4 1.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0v-5.5A.75.75 0 0 1 12 4.75Z" clip-rule="evenodd"/></svg>
+            </div>
+            <div>
+              <span class="arch-card-title">
+                Agent Runtime
+                <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path fill-rule="evenodd" d="M5.75 2H5v1.5h6.44l-9.22 9.22-.53.53 1.06 1.06.53-.53 9.22-9.22V11H14V3a1 1 0 0 0-1-1z" clip-rule="evenodd"/></svg>
+              </span>
+              <span class="arch-card-desc">Deploy and manage autonomous agents with lifecycle control, message routing, and strategy enforcement in production.</span>
+            </div>
+          </a>
+
+          <a class="arch-card" href="#features" aria-label="Orchestration Layer">
+            <div class="arch-card-icon">
+              <svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M4.5 1.94q.3-.2.91-.03.64.19 1.47.83l.4.34q-.63.68-1.24 1.52-1.04.1-1.94.32L4 4.4q-.14-1.04.02-1.69.16-.62.48-.77m3 .01.5.43.5-.43a6 6 0 0 1 1.8-1 2.1 2.1 0 0 1 1.7.12c.52.3.81.82.95 1.41q.2.91.03 2.06l-.11.65.62.22a6 6 0 0 1 1.76 1.06c.45.42.75.93.75 1.53s-.3 1.11-.75 1.53a6 6 0 0 1-1.76 1.06l-.62.22.11.65q.17 1.16-.03 2.06c-.14.59-.43 1.11-.95 1.4-.52.3-1.12.3-1.7.13a6 6 0 0 1-1.8-1l-.5-.43-.5.43a6 6 0 0 1-1.8 1c-.58.17-1.18.18-1.7-.12s-.81-.82-.95-1.41a6 6 0 0 1-.03-2.06l.11-.65-.62-.22A6 6 0 0 1 .75 9.53 2.1 2.1 0 0 1 0 8c0-.6.3-1.11.75-1.53A6 6 0 0 1 2.5 5.4l.62-.22-.11-.65a6 6 0 0 1 .03-2.06c.14-.59.43-1.11.95-1.4.52-.3 1.12-.3 1.7-.13q.88.28 1.8 1" clip-rule="evenodd"/></svg>
+            </div>
+            <div>
+              <span class="arch-card-title">
+                Orchestration
+                <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path fill-rule="evenodd" d="M5.75 2H5v1.5h6.44l-9.22 9.22-.53.53 1.06 1.06.53-.53 9.22-9.22V11H14V3a1 1 0 0 0-1-1z" clip-rule="evenodd"/></svg>
+              </span>
+              <span class="arch-card-desc">Governance, strategy, and monitoring layers that coordinate agent behavior and enforce system-level policies at runtime.</span>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== CTA ====== -->
+  <section class="cta-section" id="cta">
+    <div class="cta-box reveal">
+      <div class="cta-glow"></div>
+      <svg class="cta-plus cta-plus-tl" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
+      <svg class="cta-plus cta-plus-tr" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
+      <svg class="cta-plus cta-plus-bl" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
+      <svg class="cta-plus cta-plus-br" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg>
+      <h2>Ready to build<br>intelligent systems?</h2>
+      <p class="cta-desc">Start designing your multi-agent architecture with P-MAS Studio's visual editor and structured orchestration framework.</p>
+      <div class="cta-buttons">
+        <a href="#" class="btn-primary">Get Started</a>
+        <a href="#" class="btn-ghost">Read Documentation</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="7" fill="#58A6FF" fill-opacity="0.15"/>
+          <path d="M8 10h4v4H8zM16 10h4v4h-4zM12 16h4v4h-4z" fill="#58A6FF"/>
+          <path d="M12 12l4 4" stroke="#BC8CFF" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        P-MAS Studio
+      </div>
+      <ul class="footer-links">
+        <li><a href="#">Documentation</a></li>
+        <li><a href="https://github.com/stsgs1980/P-mas-studio" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href="#">Discord</a></li>
+      </ul>
+      <span class="footer-copy">2025 P-MAS Studio</span>
+    </div>
+  </footer>
+</main>
+
+<!-- ================================================================
+     THREE.JS -- Barely visible dust particles only
+     ================================================================ -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+const canvas = document.getElementById('bg-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 50;
+
+const PARTICLE_COUNT = 120;
+const positions = new Float32Array(PARTICLE_COUNT * 3);
+const velocities = [];
+for (let i = 0; i < PARTICLE_COUNT; i++) {
+  positions[i * 3]     = (Math.random() - 0.5) * 100;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 60;
+  positions[i * 3 + 2] = (Math.random() - 0.5) * 40;
+  velocities.push({ x: (Math.random() - 0.5) * 0.005, y: (Math.random() - 0.5) * 0.005, z: (Math.random() - 0.5) * 0.003 });
+}
+
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+const material = new THREE.PointsMaterial({
+  color: 0x58A6FF, size: 0.15, transparent: true, opacity: 0.25,
+  blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
+});
+
+const points = new THREE.Points(geometry, material);
+scene.add(points);
+
+function animate() {
+  requestAnimationFrame(animate);
+  const pos = geometry.attributes.position.array;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    pos[i * 3]     += velocities[i].x;
+    pos[i * 3 + 1] += velocities[i].y;
+    pos[i * 3 + 2] += velocities[i].z;
+    if (Math.abs(pos[i * 3])     > 50) velocities[i].x *= -1;
+    if (Math.abs(pos[i * 3 + 1]) > 30) velocities[i].y *= -1;
+    if (Math.abs(pos[i * 3 + 2]) > 20) velocities[i].z *= -1;
+  }
+  geometry.attributes.position.needsUpdate = true;
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+<!-- ================================================================
+     PULSE ANIMATIONS & SCROLL REVEAL
+     ================================================================ -->
+<style>
+/* Pulse animations -- 6px visible on 600px path = 1% visible at any moment */
+@keyframes pulse-flow-a { 0% { stroke-dashoffset: 600; } 100% { stroke-dashoffset: 0; } }
+@keyframes pulse-flow-b { 0% { stroke-dashoffset: 600; } 100% { stroke-dashoffset: 0; } }
+@keyframes pulse-flow-c { 0% { stroke-dashoffset: 600; } 100% { stroke-dashoffset: 0; } }
+
+.pulse-a { stroke-dasharray: 6 594; animation: pulse-flow-a 4.5s ease-in-out infinite; }
+.pulse-b { stroke-dasharray: 6 594; animation: pulse-flow-b 5.0s ease-in-out infinite; }
+.pulse-c { stroke-dasharray: 6 594; animation: pulse-flow-c 5.5s ease-in-out infinite; }
+</style>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+
+<!-- BACK BUTTON -->
+<style>
+#back-btn{position:fixed;top:20px;left:20px;z-index:99999;display:flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(11,11,15,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(200,169,126,0.2);border-radius:60px;color:#EDEDEF;font-family:'Manrope',-apple-system,sans-serif;font-size:13px;font-weight:600;text-decoration:none;transition:all .3s cubic-bezier(.16,1,.3,1);letter-spacing:.01em;cursor:pointer}
+#back-btn:hover{background:rgba(200,169,126,0.15);border-color:rgba(200,169,126,0.4);transform:translateY(-2px);box-shadow:0 8px 32px rgba(200,169,126,0.1)}
+#back-btn svg{width:16px;height:16px;flex-shrink:0}
+</style>
+<a id="back-btn" href="/"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h8M8 4L4 8l4 4"/></svg>Back to Portfolio</a>
+
+</body>
+</html>

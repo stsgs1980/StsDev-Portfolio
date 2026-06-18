@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI-Kit Studio — Design System Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0B0B0F;
+      --surface: #16161A;
+      --accent: #C8A97E;
+      --accent-dim: rgba(200,169,126,0.10);
+      --text: #EDEDEF;
+      --secondary: #72727E;
+      --dim: #55555E;
+      --border: rgba(255,255,255,0.06);
+      --line: rgba(255,255,255,0.08);
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'Manrope', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --success: #4ADE80;
+      --warning: #FBBF24;
+      --info: #38BDF8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== LAYERS ===== */
+    .grain {
+      position: fixed; inset: 0; z-index: 9998; pointer-events: none; opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat; background-size: 256px 256px;
+    }
+
+    .dot-grid {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.018;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .vignette {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 50%, rgba(11,11,15,0.5) 100%);
+    }
+
+    .side-left {
+      position: fixed; left: 0; top: 0; bottom: 0; width: 1px;
+      background: linear-gradient(to bottom, transparent 8%, var(--accent) 25%, var(--accent) 75%, transparent 92%);
+      opacity: 0.10; z-index: 50;
+    }
+
+    .side-right {
+      position: fixed; right: 0; top: 0; bottom: 0; width: 1px;
+      background: linear-gradient(to bottom, transparent 8%, var(--accent) 25%, var(--accent) 75%, transparent 92%);
+      opacity: 0.10; z-index: 50;
+    }
+
+    /* ===== TYPOGRAPHY ===== */
+    h1 { font-family: var(--serif); font-size: clamp(48px, 8vw, 80px); font-weight: 400; font-style: italic; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-family: var(--serif); font-size: clamp(28px, 4vw, 42px); font-weight: 400; font-style: italic; color: var(--accent); margin-bottom: 1rem; }
+    h3 { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--secondary); margin-bottom: 1rem; }
+
+    /* ===== NAVIGATION ===== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(11,11,15,0.8);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1280px; margin: 0 auto;
+      padding: 0 clamp(24px,4vw,56px);
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .logo {
+      font-family: var(--serif); font-size: 20px; font-weight: 500;
+      color: var(--text); letter-spacing: -0.02em;
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif); font-weight: 500; font-size: 16px;
+      color: var(--bg); font-style: italic;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+
+    .nav-links a {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      color: var(--secondary); text-decoration: none;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      transition: color 0.2s; position: relative;
+    }
+
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; width: 0;
+      height: 1px; background: var(--accent); transition: width 0.3s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-cta {
+      padding: 10px 20px; background: var(--accent); color: var(--bg);
+      border: none; font-family: var(--sans); font-weight: 600;
+      font-size: 11px; cursor: pointer; letter-spacing: 0.02em;
+      text-decoration: none; transition: background 0.2s;
+    }
+    .nav-cta:hover { background: #9A8468; }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center;
+      padding: clamp(80px, 10vh, 120px) clamp(24px,4vw,56px);
+      position: relative;
+    }
+
+    .hero-label {
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 24px;
+    }
+
+    .hero-title {
+      max-width: 800px;
+      margin-bottom: 24px;
+    }
+
+    .hero-subtitle {
+      font-size: 18px; color: var(--secondary);
+      max-width: 560px; line-height: 1.7;
+      margin-bottom: 48px;
+    }
+
+    .hero-cta {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    }
+
+    .btn {
+      padding: 14px 32px; font-family: var(--sans); font-weight: 600;
+      font-size: 12px; cursor: pointer; letter-spacing: 0.02em;
+      text-decoration: none; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent); color: var(--bg); border: none;
+    }
+    .btn-primary:hover { background: #9A8468; }
+
+    .btn-secondary {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.12); }
+
+    /* ===== FEATURES ===== */
+    .features {
+      padding: clamp(60px, 8vh, 100px) clamp(24px,4vw,56px);
+      max-width: 1280px; margin: 0 auto;
+    }
+
+    .features-header {
+      text-align: center; margin-bottom: 60px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--line);
+    }
+
+    .feature-card {
+      background: var(--bg); padding: 40px;
+      position: relative; transition: background 0.2s;
+      text-decoration: none; display: block;
+    }
+
+    .feature-card:hover { background: rgba(255,255,255,0.02); }
+
+    .feature-card::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 1px; height: 100%;
+      background: linear-gradient(to bottom, transparent 10%, var(--accent) 30%, var(--accent) 70%, transparent 90%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+
+    .feature-card:hover::before { opacity: 0.15; }
+
+    .feature-number {
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      letter-spacing: 0.12em; color: var(--dim);
+      margin-bottom: 16px;
+    }
+
+    .feature-title {
+      font-family: var(--serif); font-size: 24px; font-weight: 400;
+      font-style: italic; color: var(--accent); margin-bottom: 12px;
+    }
+
+    .feature-desc {
+      font-size: 14px; color: var(--secondary);
+      line-height: 1.7; margin-bottom: 20px;
+    }
+
+    .feature-link {
+      font-family: var(--mono); font-size: 11px; font-weight: 500;
+      color: var(--text); letter-spacing: 0.04em;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    .feature-link::after {
+      content: ''; width: 20px; height: 1px; background: var(--accent);
+      transition: width 0.3s;
+    }
+
+    .feature-card:hover .feature-link::after { width: 32px; }
+
+    /* ===== PIPELINE PREVIEW ===== */
+    .pipeline-preview {
+      padding: clamp(60px, 8vh, 100px) clamp(24px,4vw,56px);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .pipeline-inner {
+      max-width: 1280px; margin: 0 auto;
+    }
+
+    .pipeline-header {
+      text-align: center; margin-bottom: 48px;
+    }
+
+    .timeline {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; position: relative;
+    }
+
+    .timeline::before {
+      content: ''; position: absolute;
+      top: 50%; left: 10%; right: 10%;
+      height: 1px; background: var(--line);
+      transform: translateY(-50%);
+    }
+
+    .stage {
+      flex: 1; max-width: 120px;
+      text-align: center; position: relative; z-index: 1;
+    }
+
+    .stage-dot {
+      width: 12px; height: 12px; margin: 0 auto 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+
+    .stage:hover .stage-dot {
+      background: var(--accent); border-color: var(--accent);
+    }
+
+    .stage-label {
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      color: var(--secondary); letter-spacing: 0.04em;
+    }
+
+    /* ===== CTA ===== */
+    .cta-section {
+      padding: clamp(100px, 15vh, 160px) clamp(24px,4vw,56px);
+      text-align: center;
+    }
+
+    .cta-inner {
+      max-width: 640px; margin: 0 auto;
+    }
+
+    .cta-title {
+      margin-bottom: 20px;
+    }
+
+    .cta-desc {
+      font-size: 16px; color: var(--secondary);
+      line-height: 1.7; margin-bottom: 32px;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      max-width: 1280px; margin: 0 auto;
+      padding: 48px clamp(24px,4vw,56px);
+      border-top: 1px solid var(--line);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .foot-brand {
+      font-family: var(--serif); font-size: 16px; font-style: italic;
+      color: var(--secondary);
+    }
+
+    .foot-links {
+      display: flex; gap: 24px;
+    }
+
+    .foot-links a {
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      color: var(--dim); text-decoration: none;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .foot-links a:hover { color: var(--text); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .side-right { display: none; }
+      .timeline { flex-wrap: wrap; gap: 20px; }
+      .timeline::before { display: none; }
+      .stage { flex: 0 0 calc(33.33% - 10px); max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="dot-grid" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="side-left" aria-hidden="true"></div>
+<div class="side-right" aria-hidden="true"></div>
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">U</div>
+      <span>UI-Kit <span>Studio</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="ui-kit-studio-app.html">Extractor</a></li>
+      <li><a href="ui-kit-studio-app.html#library">Library</a></li>
+      <li><a href="ui-kit-studio-app.html#studio">Studio</a></li>
+      <li><a href="ui-kit-studio-app.html#github">GitHub</a></li>
+    </ul>
+    <a href="ui-kit-studio-app.html" class="nav-cta">Open App →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">Design System Toolkit</div>
+  <h1 class="hero-title">From any website<br>to your design system</h1>
+  <p class="hero-subtitle">
+    Extract tokens, analyze components, compose layouts. One pipeline from URL to production-ready design system.
+  </p>
+  <div class="hero-cta">
+    <a href="ui-kit-studio-app.html" class="btn btn-primary">Launch App</a>
+    <a href="#features" class="btn btn-secondary">Learn More</a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-header">
+    <h3>Tools</h3>
+    <h2>Four instruments, one workflow</h2>
+  </div>
+
+  <div class="features-grid">
+    <a href="ui-kit-studio-app.html#extractor" class="feature-card">
+      <div class="feature-number">01</div>
+      <h3 class="feature-title">Design Extractor</h3>
+      <p class="feature-desc">
+        URL → tokens pipeline. Extract colors, typography, spacing, and component patterns from any website.
+      </p>
+      <span class="feature-link">Open Extractor</span>
+    </a>
+
+    <a href="ui-kit-studio-app.html#library" class="feature-card">
+      <div class="feature-number">02</div>
+      <h3 class="feature-title">Component Library</h3>
+      <p class="feature-desc">
+        Atomic design hierarchy. Browse atoms, molecules, organisms with reusability metrics and code preview.
+      </p>
+      <span class="feature-link">Browse Library</span>
+    </a>
+
+    <a href="ui-kit-studio-app.html#studio" class="feature-card">
+      <div class="feature-number">03</div>
+      <h3 class="feature-title">Interface Builder</h3>
+      <p class="feature-desc">
+        Layout pattern composer with phi-grid proportions. Drag components, export code, push to GitHub.
+      </p>
+      <span class="feature-link">Start Building</span>
+    </a>
+
+    <a href="ui-kit-studio-app.html#github" class="feature-card">
+      <div class="feature-number">04</div>
+      <h3 class="feature-title">GitHub Integration</h3>
+      <p class="feature-desc">
+        Sync design tokens and components with your repositories. Push changes, track activity, collaborate.
+      </p>
+      <span class="feature-link">Connect Repos</span>
+    </a>
+  </div>
+</section>
+
+<!-- PIPELINE PREVIEW -->
+<section class="pipeline-preview">
+  <div class="pipeline-inner">
+    <div class="pipeline-header">
+      <h3>Pipeline</h3>
+      <h2>7 stages from URL to design system</h2>
+    </div>
+
+    <div class="timeline">
+      <div class="stage"><div class="stage-dot"></div><div class="stage-label">Fetch</div></div>
+      <div class="stage"><div class="stage-dot"></div><div class="stage-label">Parse</div></div>
+      <div class="stage"><div class="stage-dot"></div><div class="stage-label">Style</div></div>
+      <div class="stage"><div class="stage-dot"></div><div class="stage-label">Color</div></div>
+      <div class="stage"><div class="stage-dot"></div><div class="stage-label">Typography</div></div>
+      <div class="stage"><div class="stage-dot"></div><div class="stage-label">Components</div></div>
+      <div class="stage"><div class="stage-dot"></div><div class="stage-label">Spacing</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-title">Ready to build your design system?</h2>
+    <p class="cta-desc">
+      Start extracting tokens from any website in seconds. No setup required.
+    </p>
+    <a href="ui-kit-studio-app.html" class="btn btn-primary">Launch UI-Kit Studio</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-brand">UI-Kit Studio</div>
+  <div class="foot-links">
+    <a href="#">Documentation</a>
+    <a href="#">GitHub</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+
+<!-- BACK BUTTON -->
+<style>
+#back-btn{position:fixed;top:20px;left:20px;z-index:99999;display:flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(11,11,15,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(200,169,126,0.2);border-radius:60px;color:#EDEDEF;font-family:'Manrope',-apple-system,sans-serif;font-size:13px;font-weight:600;text-decoration:none;transition:all .3s cubic-bezier(.16,1,.3,1);letter-spacing:.01em;cursor:pointer}
+#back-btn:hover{background:rgba(200,169,126,0.15);border-color:rgba(200,169,126,0.4);transform:translateY(-2px);box-shadow:0 8px 32px rgba(200,169,126,0.1)}
+#back-btn svg{width:16px;height:16px;flex-shrink:0}
+</style>
+<a id="back-btn" href="/"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h8M8 4L4 8l4 4"/></svg>Back to Portfolio</a>
+
+</body>
+</html>
