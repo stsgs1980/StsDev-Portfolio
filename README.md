@@ -35,13 +35,13 @@ Personal portfolio website of Stanislav Graur. Brutalist Elegance design system 
 ### Installation
 
 ```bash
-# Clone repository
+## Clone repository
 git clone https://github.com/stanislav-graur/portfolio.git
 
-# Install dependencies
+## Install dependencies
 bun install
 
-# Run development server
+## Run development server
 bun run dev
 ```
 
@@ -79,5 +79,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - CSS classes follow BEM-like naming in globals.css
 - No em dash in headings or code blocks
 
----
 Built with: Next.js 16 + TypeScript + Tailwind CSS 4
+
+## License
+
+[MIT](LICENSE)
