@@ -12,8 +12,7 @@ interface Project {
 
 const PROJECTS: Project[] = [
   { titleKey: 'project.hh.title', descKey: 'project.hh.desc', catKey: 'project.hh.category', href: '/hh-copilot.html', featured: true },
-  { titleKey: 'project.pmas.title', descKey: 'project.pmas.desc', catKey: 'project.pmas.category', href: '/pmas-studio.html' },
-  { titleKey: 'project.uikit.title', descKey: 'project.uikit.desc', catKey: 'project.uikit.category', href: '/ui-kit-studio.html' },
+  { titleKey: 'project.qube.title', descKey: 'project.qube.desc', catKey: 'project.qube.category', href: '/agent-qube.html', featured: true },
   { titleKey: 'project.neuro.title', descKey: 'project.neuro.desc', catKey: 'project.neuro.category', href: '/neuro-agency.html', featured: true },
   { titleKey: 'project.wiki.title', descKey: 'project.wiki.desc', catKey: 'project.wiki.category', href: '/wiki-codex-v2.html' },
   { titleKey: 'project.wireframes.title', descKey: 'project.wireframes.desc', catKey: 'project.wireframes.category', href: '/ui-kit-wireframes.html' },
@@ -25,7 +24,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
     <a
       href={project.href}
-      className={`project-bento ${project.featured ? 'project-bento-featured' : ''} reveal d-${Math.min(index + 1, 6)} block h-full group`}
+      className={`project-bento ${project.featured ? 'project-bento-featured col-span-1 md:col-span-2' : 'col-span-1'} reveal d-${Math.min(index + 1, 6)} block h-full group`}
     >
       <div className="relative z-10 p-7 md:p-9 h-full flex flex-col">
         <div className="flex items-center justify-between mb-6">
@@ -76,7 +75,7 @@ export default function Projects() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 grid-flow-dense">
           {PROJECTS.map((project, i) => (
             <ProjectCard key={project.titleKey} project={project} index={i} />
           ))}

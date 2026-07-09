@@ -41,6 +41,10 @@ const translations: Record<Lang, Record<string, string>> = {
     'project.pmas.desc': 'Visual IDE для мультиагентных систем. Графовый редактор топологий агентов с деплоем и мониторингом оркестрации.',
     'project.pmas.category': 'Платформа',
 
+    'project.qube.title': 'Agent Qube',
+    'project.qube.desc': 'Единая платформа управления иерархией AI-агентов: оркестрация workflow, визуальный редактор топологий и реалтайм-мониторинг.',
+    'project.qube.category': 'Платформа',
+
     'project.uikit.title': 'UI Kit Studio',
     'project.uikit.desc': 'Тулкит дизайн-системы — URL-to-token извлечение, синхронизация с GitHub, GAP-анализ, пайплайн атомарного дизайна.',
     'project.uikit.category': 'Дизайн-система',
@@ -61,7 +65,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'about.tag': 'О себе',
     'about.title1': 'Не обычный',
     'about.title2': 'разработчик',
-    'about.p1': 'Я Станислав — AI-энтузиаст с 20+ годами в коммерческом руководстве. Верю, что лучшие цифровые продукты получаются, когда глубокое понимание бизнеса объединяется с практическими навыками AI.',
+    'about.p1': 'Я — AI-энтузиаст с 20+ годами в коммерческом руководстве. Верю, что лучшие цифровые продукты получаются, когда глубокое понимание бизнеса объединяется с практическими навыками AI.',
     'about.p2': 'Проекты: мультиагентные AI-системы, автоматизация воронок продаж, предиктивная аналитика, дизайн-системы и иммерсивные лендинги. Каждый проект решает конкретную задачу.',
     'about.p3': 'Стек: Next.js, TypeScript, React, Python, Prompt Engineering, LLM, D3.js, Prisma, PostgreSQL — и постоянно расширяю.',
 
@@ -78,9 +82,9 @@ const translations: Record<Lang, Record<string, string>> = {
     'exp.neuro.project': 'Лендинг digital-агенства AI/ML',
     'exp.neuro.desc': 'Canvas-частицы, 3D-карточки, glassmorphism, SVG-анимации — иммерсивный визуал.',
 
-    'exp.pmas.role': 'P-MAS Studio',
-    'exp.pmas.project': 'Visual IDE для мультиагентных систем',
-    'exp.pmas.desc': 'Графовый редактор топологий агентов, деплой и мониторинг оркестрации в реальном времени.',
+    'exp.pmas.role': 'Agent Qube',
+    'exp.pmas.project': 'Единая платформа управления иерархией AI-агентов',
+    'exp.pmas.desc': 'Оркестрация workflow, визуальный редактор топологий и реалтайм-мониторинг 26 агентов в 8 рольевых группах.',
 
     'exp.uikit.role': 'UI Kit Studio',
     'exp.uikit.project': 'Тулкит дизайн-системы',
@@ -158,6 +162,10 @@ const translations: Record<Lang, Record<string, string>> = {
     'project.pmas.desc': 'Visual IDE for Multi-Agent Systems. Graph-based topology editor with runtime deployment and orchestration monitoring.',
     'project.pmas.category': 'Platform',
 
+    'project.qube.title': 'Agent Qube',
+    'project.qube.desc': 'Unified platform for managing AI agent hierarchies: workflow orchestration, visual topology editor, and real-time monitoring.',
+    'project.qube.category': 'Platform',
+
     'project.uikit.title': 'UI Kit Studio',
     'project.uikit.desc': 'Design system toolkit — URL-to-token extraction, GitHub sync, GAP analysis, and atomic design pipeline.',
     'project.uikit.category': 'Design System',
@@ -178,7 +186,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'about.tag': 'About',
     'about.title1': 'Not Your',
     'about.title2': 'Average Dev',
-    'about.p1': "I'm Stanislav — an AI enthusiast with 20+ years in business leadership. I believe the best digital products emerge when deep business understanding meets practical AI skills.",
+    'about.p1': "I'm an AI enthusiast with 20+ years in business leadership. I believe the best digital products emerge when deep business understanding meets practical AI skills.",
     'about.p2': 'Projects: multi-agent AI systems, sales funnel automation, predictive analytics, design systems, and immersive landing pages. Each project solves a real problem.',
     'about.p3': 'Stack: Next.js, TypeScript, React, Python, Prompt Engineering, LLM, D3.js, Prisma, PostgreSQL — and growing.',
 
@@ -195,9 +203,9 @@ const translations: Record<Lang, Record<string, string>> = {
     'exp.neuro.project': 'Landing for AI/ML Digital Agency',
     'exp.neuro.desc': 'Canvas particles, 3D cards, glassmorphism, SVG animations — immersive visuals.',
 
-    'exp.pmas.role': 'P-MAS Studio',
-    'exp.pmas.project': 'Visual IDE for Multi-Agent Systems',
-    'exp.pmas.desc': 'Graph-based agent topology editor, deployment and real-time orchestration monitoring.',
+    'exp.pmas.role': 'Agent Qube',
+    'exp.pmas.project': 'Unified platform for managing AI agent hierarchies',
+    'exp.pmas.desc': 'Workflow orchestration, visual topology editor, and real-time monitoring of 26 agents across 8 role groups.',
 
     'exp.uikit.role': 'UI Kit Studio',
     'exp.uikit.project': 'Design System Toolkit',

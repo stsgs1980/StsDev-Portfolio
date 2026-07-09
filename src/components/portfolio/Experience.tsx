@@ -13,7 +13,7 @@ interface ExpEntry {
 const EXPERIENCE: ExpEntry[] = [
   { dateRange: '2025', roleKey: 'exp.hh.role', projectKey: 'exp.hh.project', descKey: 'exp.hh.desc', tech: ['TypeScript', 'Next.js', 'Puppeteer', 'OpenAI API'] },
   { dateRange: '2025', roleKey: 'exp.neuro.role', projectKey: 'exp.neuro.project', descKey: 'exp.neuro.desc', tech: ['HTML/CSS', 'Three.js', 'Canvas 2D', 'GSAP'] },
-  { dateRange: '2025 — 2026', roleKey: 'exp.pmas.role', projectKey: 'exp.pmas.project', descKey: 'exp.pmas.desc', tech: ['React', 'TypeScript', 'D3.js', 'WebSocket'] },
+  { dateRange: '2025 — 2026', roleKey: 'exp.pmas.role', projectKey: 'exp.pmas.project', descKey: 'exp.pmas.desc', tech: ['Next.js', 'TypeScript', 'React Flow', 'WebSocket', 'Prisma'] },
   { dateRange: '2026', roleKey: 'exp.uikit.role', projectKey: 'exp.uikit.project', descKey: 'exp.uikit.desc', tech: ['Next.js', 'TypeScript', 'Figma API', 'Prisma'] },
   { dateRange: '2025 — 2026', roleKey: 'exp.aiauto.role', projectKey: 'exp.aiauto.project', descKey: 'exp.aiauto.desc', tech: ['Python', 'LLM', 'Prompt Engineering', 'CRM'] },
   { dateRange: '2026', roleKey: 'exp.scripts.role', projectKey: 'exp.scripts.project', descKey: 'exp.scripts.desc', tech: ['Python', 'OpenAI API', 'Prompt Engineering'] },
